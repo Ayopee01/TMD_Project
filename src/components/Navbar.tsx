@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { BurgerIcon } from "@/components/Icons";
+import Image from "next/image";
 
 type Props = {
   onOpenMenu: () => void;
@@ -12,12 +13,17 @@ function Navbar({ onOpenMenu }: Props) {
     <nav className="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-700 dark:bg-gray-900/80">
       <div className="flex h-18 w-full items-center justify-between px-4 md:h-22">
         {/* Left: Brand/Logo */}
-        <Link href="/" className="flex items-center gap-3">
-          <img
-            src="/logo.png"
-            alt="Logo"
-            className="h-10 w-full md:h-12 md:w-full"
-          />
+        <Link href="/" className="flex items-center gap-3 h-full">
+          <span className="relative h-full w-36 sm:w-40 md:w-42">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              fill
+              priority
+              className="object-contain"
+              sizes="(max-width: 640px) 144px, (max-width: 768px) 160px, 256px"
+            />
+          </span>
         </Link>
 
         {/* Center: Desktop menu */}
@@ -66,11 +72,11 @@ function Navbar({ onOpenMenu }: Props) {
         {/* Right: Mobile hamburger */}
         <div className="flex items-center gap-3">
           <button
-            className="cursor-pointer inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 xl:hidden"
+            className="cursor-pointer inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 xl:hidden"
             onClick={onOpenMenu}
             aria-label="Open Menu"
           >
-            <BurgerIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
+            <BurgerIcon className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-gray-700 dark:text-gray-200" />
           </button>
         </div>
       </div>

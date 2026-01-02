@@ -115,3 +115,81 @@ export function WeatherSnow({ className }: IconProps) {
     </svg>
   );
 }
+
+export function CloudIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.2 12.2 3.5 3.5 0 0 0 7 18Z" />
+    </svg>
+  );
+}
+
+export function PartlyCloudyIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8">
+      {/* sun */}
+      <path d="M8 6.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
+      <path d="M8 2v2M8 15v2M2 9h2M12 9h2M3.2 3.2l1.4 1.4M11.4 13.4l1.4 1.4M12.8 3.2l-1.4 1.4" />
+      {/* cloud */}
+      <path d="M10 18h8a3.2 3.2 0 0 0 .3-6.38A4.8 4.8 0 0 0 9.7 13.3 2.7 2.7 0 0 0 10 18Z" />
+    </svg>
+  );
+}
+
+export function ThunderIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M7 15h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.2 9.2 3.5 3.5 0 0 0 7 15Z" />
+      <path d="M12 14l-2 4h3l-1 4 4-6h-3l2-2" />
+    </svg>
+  );
+}
+
+export function FogIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M4 10h16M6 14h12M5 18h14" />
+      <path d="M7 9.5a5 5 0 0 1 10 0" />
+    </svg>
+  );
+}
+
+export function TempMaxIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M10 14a2 2 0 1 0 4 0V6a2 2 0 0 0-4 0v8Z" />
+      <path d="M12 3v3" />
+      <path d="M8 14h8" />
+      <path d="M12 20l-4-4h8l-4 4Z" />
+    </svg>
+  );
+}
+
+export function TempMinIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M10 14a2 2 0 1 0 4 0V6a2 2 0 0 0-4 0v8Z" />
+      <path d="M12 21v-3" />
+      <path d="M8 14h8" />
+      <path d="M12 4l4 4H8l4-4Z" />
+    </svg>
+  );
+}
+
+export function WaveIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M3 16c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2" />
+      <path d="M3 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2" />
+    </svg>
+  );
+}
+
+export function NearbyIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10Z" />
+      <path d="M12 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+    </svg>
+  );
+}

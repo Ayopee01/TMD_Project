@@ -1,0 +1,56 @@
+// schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+enum DayNight {
+  Day
+  Night
+}
+
+model WeatherForecast {
+  id               BigInt   @id @default(autoincrement())
+  region           String   @db.VarChar(80)
+  detail           String?  @db.Text
+
+  tempC            Decimal? @db.Decimal(5, 2)
+
+  clearPct         Int?     @db.SmallInt
+  partlyCloudyPct  Int?     @db.SmallInt
+  cloudyPct        Int?     @db.SmallInt
+  rainPct          Int?     @db.SmallInt
+  thunderstormPct  Int?     @db.SmallInt
+  fogPct           Int?     @db.SmallInt
+
+  maxTempC         Decimal? @db.Decimal(5, 2)
+  minTempC         Decimal? @db.Decimal(5, 2)
+
+  windText         String?  @db.VarChar(50)
+  waveText         String?  @db.VarChar(50)
+
+  dateTime         DateTime
+  type             DayNight
+
+  nearbyAreas      WeatherNearbyArea[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([dateTime])
+  @@index([region])
+  @@unique([region, dateTime, type], name: "uq_region_datetime_type")
+}
+
+model WeatherNearbyArea {
+  id          BigInt          @id @default(autoincrement())
+  forecastId  BigInt
+  name        String          @db.VarChar(120)
+
+  forecast    WeatherForecast @relation(fields: [forecastId], references: [id], onDelete: Cascade)
+
+  @@index([forecastId])
+}
