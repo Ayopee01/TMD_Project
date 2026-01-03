@@ -3,12 +3,19 @@
 import Link from "next/link";
 import { BurgerIcon } from "@/components/Icons";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 type Props = {
   onOpenMenu: () => void;
 };
 
+function isActivePath(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
+}
+
 function Navbar({ onOpenMenu }: Props) {
+  const pathname = usePathname();
   return (
     <nav className="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-700 dark:bg-gray-900/80">
       <div className="flex h-18 w-full items-center justify-between px-4 md:h-22">
@@ -30,7 +37,11 @@ function Navbar({ onOpenMenu }: Props) {
         <div className="hidden items-center gap-8 xl:flex">
           <Link
             href="/daily"
-            className="group relative px-1 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+            className={`group relative px-1 py-2 text-sm font-medium transition-colors
+            ${isActivePath(pathname, "/daily")
+                ? "text-indigo-600 dark:text-indigo-400"
+                : "text-gray-700 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+              }`}
           >
             พยากรณ์อากาศประจำวัน
             <span className="absolute left-0 -bottom-1 h-[3px] w-full origin-left scale-x-0 rounded-full bg-indigo-600 transition-transform duration-500 ease-out group-hover:scale-x-100 dark:bg-indigo-400" />
@@ -38,23 +49,35 @@ function Navbar({ onOpenMenu }: Props) {
 
           <Link
             href="/map"
-            className="group relative px-1 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+            className={`group relative px-1 py-2 text-sm font-medium transition-colors
+            ${isActivePath(pathname, "/map")
+                ? "text-indigo-600 dark:text-indigo-400"
+                : "text-gray-700 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+              }`}
           >
             แผนที่อากาศพื้นผิว
             <span className="absolute left-0 -bottom-1 h-[3px] w-full origin-left scale-x-0 rounded-full bg-indigo-600 transition-transform duration-500 ease-out group-hover:scale-x-100 dark:bg-indigo-400" />
           </Link>
 
           <Link
-            href="/monthly"
-            className="group relative px-1 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+            href="/regional"
+            className={`group relative px-1 py-2 text-sm font-medium transition-colors
+            ${isActivePath(pathname, "/regional")
+                ? "text-indigo-600 dark:text-indigo-400"
+                : "text-gray-700 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+              }`}
           >
             สรุปลักษณะอากาศรายสัปดาห์
             <span className="absolute left-0 -bottom-1 h-[3px] w-full origin-left scale-x-0 rounded-full bg-indigo-600 transition-transform duration-500 ease-out group-hover:scale-x-100 dark:bg-indigo-400" />
           </Link>
 
           <Link
-            href="/regional"
-            className="group relative px-1 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+            href="/monthly"
+            className={`group relative px-1 py-2 text-sm font-medium transition-colors
+            ${isActivePath(pathname, "/monthly")
+                ? "text-indigo-600 dark:text-indigo-400"
+                : "text-gray-700 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+              }`}
           >
             สรุปลักษณะอากาศรายเดือน
             <span className="absolute left-0 -bottom-1 h-[3px] w-full origin-left scale-x-0 rounded-full bg-indigo-600 transition-transform duration-500 ease-out group-hover:scale-x-100 dark:bg-indigo-400" />
@@ -62,7 +85,11 @@ function Navbar({ onOpenMenu }: Props) {
 
           <Link
             href="/bulletin"
-            className="group relative px-1 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+            className={`group relative px-1 py-2 text-sm font-medium transition-colors
+            ${isActivePath(pathname, "/bulletin")
+                ? "text-indigo-600 dark:text-indigo-400"
+                : "text-gray-700 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
+              }`}
           >
             จดหมายวิชาการเกษตร
             <span className="absolute left-0 -bottom-1 h-[3px] w-full origin-left scale-x-0 rounded-full bg-indigo-600 transition-transform duration-500 ease-out group-hover:scale-x-100 dark:bg-indigo-400" />

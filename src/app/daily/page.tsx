@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import SelectField from "@/components/SelectField";
 import type { ComponentType } from "react";
 import {
@@ -56,6 +56,15 @@ const ICON_BY_FIELD: Record<FieldKey, ComponentType<{ className?: string }>> = {
   waveText: WaveIcon,
   nearbyAreas: NearbyIcon,
 };
+
+function formatNearbyValue(raw: string) {
+  // แยกด้วย comma แล้วเอามาต่อเป็นหลายบรรทัด (ไม่ต่อกันเป็นบรรทัดเดียว)
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .join("\n");
+}
 
 export default function DailyPage() {
   const [dt, setDt] = useState("AUTO");
@@ -116,15 +125,30 @@ export default function DailyPage() {
         </div>
 
         {/* BOTTOM */}
+        {/* [@media(max-height:450px)]:flex-col-3 */}
         <div className="absolute inset-x-0 bottom-30">
           <div className="mx-auto w-full max-w-2xl">
-            <div className="flex justify-center gap-6">
+            <div
+              className="
+              mx-auto w-full max-w-[420px]
+              flex items-start justify-between
+              max-[450px]:grid max-[450px]:grid-cols-3
+              max-[450px]:justify-items-center max-[450px]:gap-y-3"
+            >
               {(slide?.items ?? []).map((it, idx) => {
                 const Icon = ICON_BY_FIELD[it.key];
                 return (
                   <div key={idx} className="flex flex-col items-center gap-1 text-gray-600">
                     <Icon className="h-6 w-6" />
-                    <div className="text-xs">{it.value}</div>
+                    <div
+                      className="
+                      text-xs text-center leading-tight
+                      whitespace-pre-line wrap-break-word
+                      max-w-[140px]
+                      "
+                    >
+                      {it.key === "nearbyAreas" ? formatNearbyValue(it.value) : it.value}
+                    </div>
                   </div>
                 );
               })}
@@ -138,9 +162,8 @@ export default function DailyPage() {
                   type="button"
                   aria-label={s.label ?? `dot-${i + 1}`}
                   onClick={() => setActive(i)}
-                  className={`h-2 w-2 rounded-full cursor-pointer ${
-                    i === active ? "bg-gray-700" : "bg-gray-400/50"
-                  }`}
+                  className={`h-2 w-2 rounded-full cursor-pointer ${i === active ? "bg-gray-700" : "bg-gray-400/50"
+                    }`}
                 />
               ))}
             </div>

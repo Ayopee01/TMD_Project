@@ -4,12 +4,24 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 enum DayNight {
   Day
   Night
+}
+
+model Province {
+  id      BigInt  @id @default(autoincrement())
+  code    String  @unique @db.VarChar(10)   // แนะนำใช้รหัสทางการ เช่น "TH-10"
+  nameTh  String  @unique @db.VarChar(80)
+  nameEn  String? @db.VarChar(80)
+
+  // relation
+  nearbyAreas WeatherNearbyArea[]
+
+  @@index([nameTh])
 }
 
 model WeatherForecast {
@@ -48,9 +60,12 @@ model WeatherForecast {
 model WeatherNearbyArea {
   id          BigInt          @id @default(autoincrement())
   forecastId  BigInt
-  name        String          @db.VarChar(120)
+  provinceId  BigInt
 
   forecast    WeatherForecast @relation(fields: [forecastId], references: [id], onDelete: Cascade)
+  province    Province        @relation(fields: [provinceId], references: [id], onDelete: Restrict)
 
   @@index([forecastId])
+  @@index([provinceId])
+  @@unique([forecastId, provinceId], name: "uq_forecast_province")
 }

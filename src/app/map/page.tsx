@@ -1,46 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectField from "@/components/SelectField";
-import { CATEGORY_OPTIONS, DATE_TIME_OPTIONS } from "@/lib/mock";
+import { CATEGORY_OPTIONS } from "@/lib/mock"; // ถ้า map ยังใช้ category อยู่
+
+type Option = { label: string; value: string };
 
 export default function MapPage() {
   const [cat, setCat] = useState("");
-  const [dt, setDt] = useState("");
+  const [dt, setDt] = useState("AUTO");
+
+  const [dtOptions, setDtOptions] = useState<Option[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const res = await fetch("/api/daily", { cache: "no-store" });
+      const data = await res.json();
+      setDtOptions(data.options ?? []);
+      setDt("AUTO");
+    })();
+  }, []);
 
   return (
-    <div className="px-4 pt-5 pb-8">
-      <div className="text-2xl font-semibold text-gray-800">Topic</div>
-
-      <div className="mt-4 space-y-3">
+    <section className="h-screen w-full">
+      <div className="p-6">
+        {/* ตัวอย่าง: category */}
         <SelectField
           value={cat}
           onChange={setCat}
-          options={CATEGORY_OPTIONS}
+          options={CATEGORY_OPTIONS.map((x) => ({ label: x, value: x }))}
           placeholder="Category"
         />
-        <SelectField
-          value={dt}
-          onChange={setDt}
-          options={DATE_TIME_OPTIONS}
-          placeholder="Date/Time"
-        />
-      </div>
 
-      <div className="mt-6">
-        <div className="text-sm font-semibold text-gray-800">ภาคกลาง</div>
-        <div className="text-xs text-gray-500">Description. Lorem ipsum dolor sit amet.</div>
-
-        <div className="mt-3 overflow-hidden rounded-2xl bg-gray-200">
-          {/* Placeholder map */}
-          <div className="aspect-square w-full bg-[linear-gradient(45deg,#d1d5db_25%,transparent_25%,transparent_50%,#d1d5db_50%,#d1d5db_75%,transparent_75%,transparent)] bg-[length:18px_18px]" />
-        </div>
-
-        <div className="mt-6">
-          <div className="text-sm font-semibold text-gray-800">ภาคกลาง</div>
-          <div className="text-xs text-gray-500">Description. Lorem ipsum dolor sit amet.</div>
+        {/* Date/Time ที่เดิมเคยใช้ DATE_TIME_OPTIONS */}
+        <div className="mt-4">
+          <SelectField
+            value={dt}
+            onChange={setDt}
+            options={dtOptions}
+            placeholder="Date/Time"
+          />
         </div>
       </div>
-    </div>
+    </section>
   );
 }

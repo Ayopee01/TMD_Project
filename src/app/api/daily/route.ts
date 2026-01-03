@@ -1,7 +1,7 @@
 // src/app/api/daily/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { DayNight } from "@prisma/client";
+import { DayNight, Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -9,7 +9,6 @@ const SLOT_HOURS = [7, 13, 19] as const;
 const DAY_START_HOUR = 6;
 const NIGHT_START_HOUR = 18;
 
-// ลำดับ field (จะหยิบเฉพาะอันที่ไม่ null และเอาแค่ 6)
 const FIELD_ORDER = [
   "clearPct",
   "partlyCloudyPct",
@@ -55,16 +54,27 @@ function fmtTH(dt: Date) {
   });
 }
 
+// ✅ IMPORTANT: ให้ type รู้ว่า nearbyAreas มี province (และ province มี nameTh)
+type ForecastRow = Prisma.WeatherForecastGetPayload<{
+  include: {
+    nearbyAreas: {
+      include: {
+        province: { select: { nameTh: true } };
+      };
+    };
+  };
+}>;
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const dtParam = searchParams.get("dt") || "AUTO";
 
   // ---------- options ----------
-  // เอา dateTime ที่มีอยู่จริงในตารางมาเป็น dropdown
   const optionRows = await prisma.weatherForecast.findMany({
     distinct: ["dateTime"],
     select: { dateTime: true },
-    orderBy: { dateTime: "asc" },
+    orderBy: { dateTime: "desc" },
+    // asc
   });
 
   const options = [
@@ -78,12 +88,22 @@ export async function GET(req: Request) {
   // ---------- resolve dt + slot + type ----------
   const now = dtParam === "AUTO" ? new Date() : new Date(dtParam);
   const slot = pickSlotForDate(now);
-  const type = getDayNightByHour(now.getHours());
+
+  // ✅ ใช้ชั่วโมงของ slot (ไม่ใช่ now) เพื่อให้ Day/Night ถูกต้องตามรอบ 7/13/19
+  const type = getDayNightByHour(slot.getHours());
 
   // ---------- query forecasts ----------
-  const rows = await prisma.weatherForecast.findMany({
+  const rows: ForecastRow[] = await prisma.weatherForecast.findMany({
     where: { dateTime: slot, type },
-    include: { nearbyAreas: true },
+    include: {
+      nearbyAreas: {
+        include: {
+          province: {
+            select: { nameTh: true },
+          },
+        },
+      },
+    },
     orderBy: { region: "asc" },
   });
 
@@ -92,16 +112,21 @@ export async function GET(req: Request) {
     const items: { key: FieldKey; value: string }[] = [];
 
     const pushIf = (key: FieldKey, val: string | null | undefined) => {
-      if (val == null) return;
+      if (val == null || val === "") return;
       items.push({ key, value: val });
     };
 
-    // map value per field
     pushIf("clearPct", r.clearPct != null ? `${r.clearPct}%` : null);
-    pushIf("partlyCloudyPct", r.partlyCloudyPct != null ? `${r.partlyCloudyPct}%` : null);
+    pushIf(
+      "partlyCloudyPct",
+      r.partlyCloudyPct != null ? `${r.partlyCloudyPct}%` : null
+    );
     pushIf("cloudyPct", r.cloudyPct != null ? `${r.cloudyPct}%` : null);
     pushIf("rainPct", r.rainPct != null ? `${r.rainPct}%` : null);
-    pushIf("thunderstormPct", r.thunderstormPct != null ? `${r.thunderstormPct}%` : null);
+    pushIf(
+      "thunderstormPct",
+      r.thunderstormPct != null ? `${r.thunderstormPct}%` : null
+    );
     pushIf("fogPct", r.fogPct != null ? `${r.fogPct}%` : null);
 
     pushIf("maxTempC", r.maxTempC != null ? `${r.maxTempC}°` : null);
@@ -110,12 +135,14 @@ export async function GET(req: Request) {
     pushIf("windText", r.windText ?? null);
     pushIf("waveText", r.waveText ?? null);
 
-    pushIf(
-      "nearbyAreas",
-      r.nearbyAreas?.length ? `${r.nearbyAreas.length} พื้นที่` : null
-    );
+    // ✅ ดึงชื่อจังหวัดจาก relation province
+    const nearbyNames = (r.nearbyAreas ?? [])
+      .map((a) => a.province?.nameTh)
+      .filter((x): x is string => Boolean(x));
 
-    // เรียงตาม FIELD_ORDER และเอาไม่เกิน 6
+    // ✅ ส่งเป็นหลายบรรทัด (FE ใช้ whitespace-pre-line)
+    pushIf("nearbyAreas", nearbyNames.length ? nearbyNames.join("\n") : null);
+
     const ordered = FIELD_ORDER
       .map((k) => items.find((x) => x.key === k))
       .filter(Boolean)
