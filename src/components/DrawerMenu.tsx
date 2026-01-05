@@ -16,7 +16,7 @@ type MenuItem = { href: string; label: string };
 const MENUS: MenuItem[] = [
   { href: "/daily", label: "พยากรณ์อากาศประจำวัน" },
   { href: "/map", label: "แผนที่อากาศพื้นผิว" },
-  { href: "/regional", label: "สรุปลักษณะอากาศรายสัปดาห์" },
+  { href: "/week", label: "สรุปลักษณะอากาศรายสัปดาห์" },
   { href: "/monthly", label: "สรุปลักษณะอากาศรายเดือน" },
   { href: "/bulletin", label: "จดหมายวิชาการเกษตร" },
 ];

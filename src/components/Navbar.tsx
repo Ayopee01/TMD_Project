@@ -60,9 +60,9 @@ function Navbar({ onOpenMenu }: Props) {
           </Link>
 
           <Link
-            href="/regional"
+            href="/week"
             className={`group relative px-1 py-2 text-sm font-medium transition-colors
-            ${isActivePath(pathname, "/regional")
+            ${isActivePath(pathname, "/week")
                 ? "text-indigo-600 dark:text-indigo-400"
                 : "text-gray-700 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
               }`}

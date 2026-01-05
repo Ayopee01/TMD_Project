@@ -10,7 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="th">
-      <body className="h-screen overflow-hidden">
+      <body className="h-dvh flex flex-col overflow-hidden">
         {/* Navbar ให้อยู่บนสุดและซ้อนทับ */}
         <Navbar onOpenMenu={() => setOpen(true)} />
 
@@ -20,10 +20,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* main เป็นตัว scroll เดียวของทั้งเว็บ */}
-        <main className="h-full overflow-y-auto">
+        <main id="app-main" className="flex-1 min-h-0 overflow-y-auto">
           {children}
         </main>
+
+        {/* <main id="app-main" className="h-screen overflow-hidden">
+          {children}
+        </main> */}
+
       </body>
     </html>
   );
 }
+
+

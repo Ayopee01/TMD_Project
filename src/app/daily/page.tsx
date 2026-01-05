@@ -75,6 +75,24 @@ export default function DailyPage() {
 
   const slide = slides[active];
 
+  useEffect(() => {
+    const main = document.getElementById("app-main");
+    if (!main) return;
+
+    // เก็บค่าเดิมไว้แล้วคืนตอนออกหน้า
+    const prevOverflow = main.style.overflowY;
+    const prevHeight = main.style.height;
+
+    // ✅ ล็อคไม่ให้เลื่อนเฉพาะหน้า daily
+    main.style.overflowY = "hidden";
+    main.style.height = "100%";
+
+    return () => {
+      main.style.overflowY = prevOverflow;
+      main.style.height = prevHeight;
+    };
+  }, []);
+
   // โหลด options ครั้งเดียว
   useEffect(() => {
     (async () => {
@@ -103,7 +121,7 @@ export default function DailyPage() {
   }, [dt]);
 
   return (
-    <section className="h-screen w-full bg-gray-200 overflow-hidden">
+    <section className="h-screen overflow-hidden w-full bg-gray-200">
       <div className="relative mx-auto flex h-full w-full max-w-2xl flex-col px-8 py-8">
         {/* TOP */}
         <div className="">
@@ -125,7 +143,6 @@ export default function DailyPage() {
         </div>
 
         {/* BOTTOM */}
-        {/* [@media(max-height:450px)]:flex-col-3 */}
         <div className="absolute inset-x-0 bottom-30">
           <div className="mx-auto w-full max-w-2xl">
             <div
