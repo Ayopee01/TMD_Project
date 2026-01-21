@@ -9,9 +9,18 @@ services:
     restart: unless-stopped
     ports:
       - "3005:3000"
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - NEXT_PUBLIC_BASE_PATH=/test2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/test2"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - tmd-network
 
