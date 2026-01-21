@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.9"
 
 services:
   web:
@@ -7,23 +7,38 @@ services:
       dockerfile: Dockerfile
     container_name: tmd_test2
     restart: unless-stopped
+
+    # Host:3005 -> Container:3000
     ports:
       - "3005:3000"
-    expose:
-      - "3000"
+
     environment:
       - NODE_ENV=production
       - PORT=3000
       - NEXT_PUBLIC_BASE_PATH=/test2
+      # ใส่ env อื่นๆ ที่ต้องใช้ฝั่ง server ได้ที่นี่ เช่น
+      # - GDX_AUTH_URL=...
+      # - DEPROC_API_URL=...
+      # - CONSUMER_KEY=...
+      # - CONSUMER_SECRET=...
+      # - AGENT_ID=...
+
+    # ถ้าคุณมีไฟล์ .env บน server และอยากให้ compose โหลดให้:
+    # env_file:
+    #   - .env
+
+    # Healthcheck (เช็คจากใน container เองที่ port 3000)
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/test2"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/test2 >/dev/null || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
     networks:
       - tmd-network
 
 networks:
   tmd-network:
+    name: tmd-network
     driver: bridge
