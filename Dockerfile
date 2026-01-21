@@ -21,7 +21,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=3005
 
 # Copy package files
 COPY package.json package-lock.json* yarn.lock* ./
@@ -34,9 +34,9 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.ts ./
 
-EXPOSE 3000
+EXPOSE 3005
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:3000/test2 || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost:3005/test2 || exit 1
 
 CMD ["npm", "start"]
