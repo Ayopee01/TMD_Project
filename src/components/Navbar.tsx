@@ -4,6 +4,8 @@ import Link from "next/link";
 import { BurgerIcon } from "@/components/Icons";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useCzpAuth } from "@/hooks/useCzpAuth";
+import { FaUserCircle } from "react-icons/fa";
 
 type Props = {
   onOpenMenu: () => void;
@@ -16,6 +18,10 @@ function isActivePath(pathname: string, href: string) {
 
 function Navbar({ onOpenMenu }: Props) {
   const pathname = usePathname();
+  const { user } = useCzpAuth();
+
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim();
+
   return (
     <nav className="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-700 dark:bg-gray-900/80">
       <div className="flex h-18 w-full items-center justify-between px-4 md:h-22">
@@ -36,7 +42,7 @@ function Navbar({ onOpenMenu }: Props) {
         {/* Center: Desktop menu */}
         <div className="hidden items-center gap-8 xl:flex">
           <Link
-            href="/daily"
+            href="/page/daily"
             className={`group relative px-1 py-2 text-sm font-medium transition-colors
             ${isActivePath(pathname, "/daily")
                 ? "text-indigo-600 dark:text-indigo-400"
@@ -48,7 +54,7 @@ function Navbar({ onOpenMenu }: Props) {
           </Link>
 
           <Link
-            href="/map"
+            href="/page/map"
             className={`group relative px-1 py-2 text-sm font-medium transition-colors
             ${isActivePath(pathname, "/map")
                 ? "text-indigo-600 dark:text-indigo-400"
@@ -60,7 +66,7 @@ function Navbar({ onOpenMenu }: Props) {
           </Link>
 
           <Link
-            href="/week"
+            href="/page/week"
             className={`group relative px-1 py-2 text-sm font-medium transition-colors
             ${isActivePath(pathname, "/week")
                 ? "text-indigo-600 dark:text-indigo-400"
@@ -72,7 +78,7 @@ function Navbar({ onOpenMenu }: Props) {
           </Link>
 
           <Link
-            href="/monthly"
+            href="/page/monthly"
             className={`group relative px-1 py-2 text-sm font-medium transition-colors
             ${isActivePath(pathname, "/monthly")
                 ? "text-indigo-600 dark:text-indigo-400"
@@ -84,20 +90,28 @@ function Navbar({ onOpenMenu }: Props) {
           </Link>
 
           <Link
-            href="/bulletin"
+            href="/page/agroforecast"
             className={`group relative px-1 py-2 text-sm font-medium transition-colors
-            ${isActivePath(pathname, "/bulletin")
+            ${isActivePath(pathname, "/agroforecast")
                 ? "text-indigo-600 dark:text-indigo-400"
                 : "text-gray-700 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400"
               }`}
           >
-            จดหมายวิชาการเกษตร
+            พยากรณ์อากาศเพื่อการเกษตรราย 7 วัน
             <span className="absolute left-0 -bottom-1 h-[3px] w-full origin-left scale-x-0 rounded-full bg-indigo-600 transition-transform duration-500 ease-out group-hover:scale-x-100 dark:bg-indigo-400" />
           </Link>
         </div>
 
-        {/* Right: Mobile hamburger */}
+        {/* Right: User + Mobile hamburger */}
         <div className="flex items-center gap-3">
+          {/* ✅ User (ขวาสุด) */}
+          <div className="hidden xl:flex items-center gap-2 rounded-full border border-gray-200 bg-white/70 px-3 py-2 text-sm text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-200">
+            <FaUserCircle className="h-5 w-5" />
+            <span className="max-w-[220px] truncate font-medium">
+              {fullName || "ผู้ใช้"}
+            </span>
+          </div>
+
           <button
             className="cursor-pointer inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 xl:hidden"
             onClick={onOpenMenu}

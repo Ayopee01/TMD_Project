@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { FaUserCircle } from "react-icons/fa";
+import { useCzpAuth } from "@/hooks/useCzpAuth";
 
 type Props = { open: boolean; onClose: () => void };
 
@@ -14,15 +16,17 @@ function isActivePath(pathname: string, href: string) {
 type MenuItem = { href: string; label: string };
 
 const MENUS: MenuItem[] = [
-  { href: "/daily", label: "พยากรณ์อากาศประจำวัน" },
-  { href: "/map", label: "แผนที่อากาศพื้นผิว" },
-  { href: "/week", label: "สรุปลักษณะอากาศรายสัปดาห์" },
-  { href: "/monthly", label: "สรุปลักษณะอากาศรายเดือน" },
-  { href: "/bulletin", label: "จดหมายวิชาการเกษตร" },
+  { href: "/page/daily", label: "พยากรณ์อากาศประจำวัน" },
+  { href: "/page/map", label: "แผนที่อากาศพื้นผิว" },
+  { href: "/page/week", label: "สรุปลักษณะอากาศรายสัปดาห์" },
+  { href: "/page/monthly", label: "สรุปลักษณะอากาศรายเดือน" },
+  { href: "/page/agroforecast", label: "พยากรณ์อากาศเพื่อการเกษตรราย 7 วัน" },
 ];
 
 export default function DrawerMenu({ open, onClose }: Props) {
   const pathname = usePathname();
+  const { user } = useCzpAuth();
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim();
 
   // ESC to close + lock body scroll
   useEffect(() => {
@@ -62,7 +66,7 @@ export default function DrawerMenu({ open, onClose }: Props) {
           "bg-white/95 backdrop-blur",
           "shadow-[0_20px_60px_-20px_rgba(0,0,0,0.35)]",
           "transition-transform duration-300 ease-out will-change-transform",
-          "rounded-l-3xl",
+          "rounded-l-3xl","flex flex-col",
           open ? "translate-x-0" : "translate-x-full",
         ].join(" ")}
         role="dialog"
@@ -137,6 +141,18 @@ export default function DrawerMenu({ open, onClose }: Props) {
             })}
           </div>
         </nav>
+        {/* Footer: User */}
+        <div className="mt-auto border-t border-gray-100 px-5 py-4">
+          <div className="flex items-center gap-3 rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-800">
+            <FaUserCircle className="h-6 w-6 text-gray-700" />
+            <div className="min-w-0">
+              <div className="text-xs text-gray-500">ผู้ใช้งาน</div>
+              <div className="truncate font-medium">
+                {fullName || "ไม่พบข้อมูลผู้ใช้"}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );

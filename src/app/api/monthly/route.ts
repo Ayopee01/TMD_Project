@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 
 export const revalidate = 300; // cache api 300 วินาที/5 นาที
 
-// URL API พยากรณ์อากาศรายวัน
-const TMD_URL = "https://data.tmd.go.th/api/DailyForecast/v2/?uid=api&ukey=api12345";
-// URL API : https://data.tmd.go.th/api/TMDForecastDaily/v1/
+// URL API พยากรณ์อากาศรายเดือน
+const TMD_URL = "https://data.tmd.go.th/api/TMDClimateMonthly/v1/";
 
 export async function GET() {
     try {
