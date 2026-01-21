@@ -36,9 +36,9 @@ services:
       start_period: 40s
 
     networks:
-      - tmd-network
+      - tmd_project-web
 
 networks:
-  tmd-network:
-    name: tmd-network
+  tmd_project-web :
+    name: tmd_project-web
     driver: bridge
