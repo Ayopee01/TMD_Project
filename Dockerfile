@@ -21,7 +21,7 @@ RUN npm run build
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 RUN useradd -m nextjs
@@ -33,5 +33,5 @@ COPY --from=builder /app/.next/standalone/node_modules ./node_modules
 COPY --from=builder /app/.next/standalone/package.json ./
 
 USER nextjs
-EXPOSE 8080
+EXPOSE 3000
 CMD ["node", ".next/standalone/server.js"]

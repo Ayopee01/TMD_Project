@@ -4,7 +4,7 @@ services:
     build: .
     restart: always
     ports:
-      - "3005:8080"   # ✅ host:container (3005:8080)
+      - "3005:3000"   # ✅ host:container (3005:3000)
     env_file:
       - .env
     networks:
