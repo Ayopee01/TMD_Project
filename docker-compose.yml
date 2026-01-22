@@ -1,15 +1,19 @@
+version: '3.8'
+
 services:
   app:
-    container_name: tmd_project-app
+    container_name: tmd_app
     build: .
     restart: always
     ports:
-      - "3005:3000"   # ✅ host:container (3005:3000)
+      - "3005:3000"
     env_file:
       - .env
+    # ✅ จุดสำคัญ 2: ยัดเข้า Network เดียวกัน
     networks:
       - my-network
 
+# ✅ จุดสำคัญ 4: สร้าง Network กลางให้มันคุยกัน
 networks:
   my-network:
-    driver: bridge   # ✅ ใช้ network เดิมร่วมกัน
+    driver: bridge
