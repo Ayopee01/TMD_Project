@@ -4,11 +4,11 @@ WORKDIR /app
 
 COPY package.json package-lock.json* ./
 
-RUN npm install --legacy-peer-deps || ( \
-  echo "----- npm install failed. Showing logs -----" && \
-  ls -la /root/.npm/_logs || true && \
-  tail -n 200 /root/.npm/_logs/*-debug-0.log || true && \
-  exit 1 )
+RUN npm install --legacy-peer-deps --force --no-audit 2>&1 || { \
+  echo "npm install failed, retrying..."; \
+  npm cache clean --force; \
+  npm install --legacy-peer-deps --force --no-audit; \
+}
 
 # ---- builder ----
 FROM node:20-bookworm-slim AS builder
