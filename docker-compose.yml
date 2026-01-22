@@ -1,8 +1,6 @@
-
 services:
   app:
     container_name: tmd_project-app
-    image: tmd_project-web
     build: .
     restart: always
     ports:
@@ -14,4 +12,4 @@ services:
 
 networks:
   my-network:
-    external: true    # ✅ ใช้ network เดิมร่วมกัน
+    driver: bridge   # ✅ ใช้ network เดิมร่วมกัน
