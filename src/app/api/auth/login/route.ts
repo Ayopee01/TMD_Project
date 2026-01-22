@@ -1,44 +1,26 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { deprocProfile } from "@/lib/czpClient"; 
 
 export const runtime = "nodejs";
 
-/**
- * POST /api/auth/login
- * Authenticate user with appId and mToken
- */
-export async function POST(req: NextRequest) {
-  // Check method
-  if (req.method !== "POST") {
-    return NextResponse.json(
-      { status: "error", message: "Method not allowed" },
-      { status: 405 }
-    );
-  }
+// API route สำหรับ login ด้วย appId + mToken
+export async function POST(req: Request) {
+  const { appId, mToken } = (await req.json()) as { appId: string; mToken: string };
 
-  const { appId, mToken } = (await req.json()) as { appId?: string; mToken?: string };
-
-  // Validate parameters
+  // ตรวจสอบ Parameter
   if (!appId || !mToken) {
-    return NextResponse.json(
-      { status: "error", message: "Missing appId or mToken" },
-      { status: 400 }
-    );
+    return NextResponse.json({ status: "error", message: "Missing appId/mToken" }, { status: 400 });
   }
 
   try {
-    // Fetch user profile from deproc
+    // validate -> iToken -> deproc
     const profile = await deprocProfile(appId, mToken);
 
-    // Return success response
+    // ส่งข้อมูลกลับกรณีไม่สำเร็จ
+    return NextResponse.json({ status: "success", data: profile }, { status: 200 });
+  } catch (e: any) {
     return NextResponse.json(
-      { status: "success", data: profile },
-      { status: 200 }
-    );
-  } catch (error: any) {
-    // Return error response
-    return NextResponse.json(
-      { status: "error", message: error?.message || "Authentication failed" },
+      { status: "error", message: e?.message || "Login failed" },
       { status: 401 }
     );
   }
