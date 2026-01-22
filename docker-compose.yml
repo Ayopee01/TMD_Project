@@ -1,12 +1,12 @@
 version: "3.8"
 
 services:
-  app:
-    container_name: tmd_n-app
+  tmd_web:
+    image: tmd_project-web
     build: .
     restart: always
     ports:
-      - "1040:3005"   # ✅ host:3005 -> container:3005
+      - "3005:8080"   # ✅ ให้ตรงกับที่ container ฟังจริง
     env_file:
       - .env
     networks:
