@@ -1,19 +1,17 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  app:
-    container_name: mtoken_n-app
+  tmd_web:
+    image: tmd_project-web
     build: .
     restart: always
     ports:
-      - "3005:3000"
+      - "3005:8080"   # ✅ ให้ตรงกับที่ container ฟังจริง
     env_file:
       - .env
-    # ✅ จุดสำคัญ: ยัดเข้า Network เดียวกัน
     networks:
       - my-network
 
-# ✅ จุดสำคัญ: สร้าง Network กลางให้มันคุยกัน
 networks:
   my-network:
-    driver: bridge
+    external: true    # ✅ ใช้ network เดิมร่วมกัน
