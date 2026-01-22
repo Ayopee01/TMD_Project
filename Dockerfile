@@ -4,8 +4,9 @@ WORKDIR /app
 
 COPY package.json package-lock.json* ./
 
-RUN npm install --legacy-peer-deps --force --no-audit || \
-    (npm cache clean --force && npm install --legacy-peer-deps --force --no-audit)
+RUN npm cache clean --force && \
+    rm -f package-lock.json && \
+    npm install --legacy-peer-deps
 
 # ---- builder ----
 FROM node:20-bookworm-slim AS builder
