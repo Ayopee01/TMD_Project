@@ -1,42 +1,37 @@
 # ---- deps ----
-FROM node:20-alpine AS deps
+FROM node:20-bookworm-slim AS deps
 WORKDIR /app
-
-# สำหรับบางแพ็กเกจที่ต้องใช้ glibc compatibility บน alpine
-RUN apk add --no-cache libc6-compat
 
 COPY package.json package-lock.json* ./
-RUN npm install --legacy-peer-deps
+
+RUN npm install --legacy-peer-deps || ( \
+  echo "----- npm install failed. Showing logs -----" && \
+  ls -la /root/.npm/_logs || true && \
+  tail -n 200 /root/.npm/_logs/*-debug-0.log || true && \
+  exit 1 )
 
 # ---- builder ----
-FROM node:20-alpine AS builder
+FROM node:20-bookworm-slim AS builder
 WORKDIR /app
-
 ENV NODE_ENV=production
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Build Next.js
 RUN npm run build
 
 # ---- runner ----
-FROM node:20-alpine AS runner
+FROM node:20-bookworm-slim AS runner
 WORKDIR /app
-
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# สร้าง user non-root
-RUN addgroup -S nextjs && adduser -S nextjs -G nextjs
+RUN useradd -m nextjs
 
-# คัดลอกเฉพาะสิ่งที่จำเป็น (standalone)
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/.next/standalone ./
 
 USER nextjs
-
 EXPOSE 3000
 CMD ["node", "server.js"]
