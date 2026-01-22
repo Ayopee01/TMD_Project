@@ -1,42 +1,19 @@
+version: '3.8'
+
 services:
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: tmd_test2
-    restart: unless-stopped
-
-    # Host:3005 -> Container:3000 (Next.js default)
+  app:
+    container_name: mtoken_n-app
+    build: .
+    restart: always
     ports:
-      - "3005:3005"
-
-    environment:
-      - NODE_ENV=production
-      - PORT=3005
-      - NEXT_PUBLIC_BASE_PATH=/test2
-      # ใส่ env อื่นๆ ที่ต้องใช้ฝั่ง server ได้ที่นี่ เช่น
-      # - GDX_AUTH_URL=...
-      # - DEPROC_API_URL=...
-      # - CONSUMER_KEY=...
-      # - CONSUMER_SECRET=...
-      # - AGENT_ID=...
-
-    # ถ้าคุณมีไฟล์ .env บน server และอยากให้ compose โหลดให้:
-    # env_file:
-    #   - .env
-
-    # Healthcheck (เช็คจากใน container เองที่ port 3005)
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:3005/test2 >/dev/null || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
+      - "3005:3000"
+    env_file:
+      - .env
+    # ✅ จุดสำคัญ: ยัดเข้า Network เดียวกัน
     networks:
-      - tmd_project-web
+      - my-network
 
+# ✅ จุดสำคัญ: สร้าง Network กลางให้มันคุยกัน
 networks:
-  tmd_project-web :
-    name: tmd_project-web
+  my-network:
     driver: bridge

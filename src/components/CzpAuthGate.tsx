@@ -11,7 +11,19 @@ type LoginResponse =
 // เก็บ session ไว้ใน sessionStorage
 const SESSION_KEY = "czp_profile";
 
-export default function CzpAuthGate({ children }: { children: React.ReactNode }) {
+function toErrorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (typeof e === "string") return e;
+
+  // รองรับกรณี throw เป็น object แปลก ๆ
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
+
+function CzpAuthGate({ children }: { children: React.ReactNode }) {
   // สถานะ SDK Load Citizen Portal SDK
   const [sdkReady, setSdkReady] = useState(false);
   // สถานะการ Loading / Error
@@ -23,6 +35,31 @@ export default function CzpAuthGate({ children }: { children: React.ReactNode })
   const [user, setUser] = useState<CzpUser | null>(null);
   // ป้องกันการ login ซ้ำด้วย useRef
   const busyRef = useRef(false);
+
+  // โหลด session
+  const loadSession = () => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw) as { appId: string; user: CzpUser };
+    } catch {
+      return null;
+    }
+  };
+
+  // บันทึก session
+  const saveSession = (data: { appId: string; user: CzpUser }) => {
+    try {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    } catch {}
+  };
+
+  // ลบ session
+  const clearSession = () => {
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {}
+  };
 
   // Function อ่านค่า query string (รับค่าจาก URL Params)
   const querystring = () => {
@@ -61,7 +98,7 @@ export default function CzpAuthGate({ children }: { children: React.ReactNode })
     saveSession({ appId: a, user: json.data });
   }, []);
 
-  // Function relogin 
+  // Function relogin
   const relogin = useCallback(async () => {
     if (!sdkReady) return;
     if (busyRef.current) return;
@@ -71,8 +108,8 @@ export default function CzpAuthGate({ children }: { children: React.ReactNode })
     setLoading(true);
     setError(null);
 
-    // ล้าง state เก่า
     try {
+      // ล้าง state เก่า + session เก่า
       clearSession();
       setUser(null);
       setAppId(null);
@@ -100,12 +137,14 @@ export default function CzpAuthGate({ children }: { children: React.ReactNode })
       // ดึง appId + mToken จาก SDK
       const foundAppId = sdk.getAppId();
       const foundToken = sdk.getToken();
-      if (!foundAppId || !foundToken) throw new Error("Missing appId or mToken from SDK");
+      if (!foundAppId || !foundToken) {
+        throw new Error("Missing appId or mToken from SDK");
+      }
 
       // เรียก login
       await doLogin(foundAppId, foundToken);
-    } catch (e: any) {
-      setError(e?.message || String(e));
+    } catch (e: unknown) {
+      setError(toErrorMessage(e));
     } finally {
       setLoading(false);
       busyRef.current = false;
@@ -116,7 +155,6 @@ export default function CzpAuthGate({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!sdkReady) return;
 
-    // มี session เก่าไหม
     const cached = loadSession();
     if (cached?.appId && cached?.user) {
       setAppId(cached.appId);
@@ -126,7 +164,6 @@ export default function CzpAuthGate({ children }: { children: React.ReactNode })
       return;
     }
 
-    // ไม่มี session → login ใหม่
     relogin();
   }, [sdkReady, relogin]);
 
@@ -135,31 +172,6 @@ export default function CzpAuthGate({ children }: { children: React.ReactNode })
     () => ({ loading, error, appId, mToken, user, relogin }),
     [loading, error, appId, mToken, user, relogin]
   );
-
-  // โหลด session
-  const loadSession = () => {
-    try {
-      const raw = sessionStorage.getItem(SESSION_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw) as { appId: string; user: CzpUser };
-    } catch {
-      return null;
-    }
-  };
-
-  // บันทึก session
-  const saveSession = (data: { appId: string; user: CzpUser }) => {
-    try {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
-    } catch { }
-  };
-
-  // ลบ session
-  const clearSession = () => {
-    try {
-      sessionStorage.removeItem(SESSION_KEY);
-    } catch { }
-  };
 
   return (
     <>
@@ -173,7 +185,9 @@ export default function CzpAuthGate({ children }: { children: React.ReactNode })
         {loading ? (
           <div className="min-h-screen bg-white">
             <div className="mx-auto max-w-3xl px-4 py-10">
-              <div className="rounded-xl border p-4 text-gray-700">กำลังเข้าสู่ระบบ...</div>
+              <div className="rounded-xl border p-4 text-gray-700">
+                กำลังเข้าสู่ระบบ...
+              </div>
             </div>
           </div>
         ) : error ? (
@@ -191,3 +205,5 @@ export default function CzpAuthGate({ children }: { children: React.ReactNode })
     </>
   );
 }
+
+export default CzpAuthGate
