@@ -11,24 +11,6 @@ type LoginResponse =
 // เก็บ session ไว้ใน sessionStorage
 const SESSION_KEY = "czp_profile";
 
-/**
- * ✅ สำคัญมาก (สาเหตุที่ Local ผ่าน แต่ Server พังบ่อย)
- * - token บางประเภทมีเครื่องหมาย "+" อยู่
- * - ในโลกของ querystring/บาง reverse proxy: "+" อาจถูก decode เป็น " " (space)
- * - พอส่งต่อไป deproc แล้ว pattern จะไม่ตรง => "The string did not match the expected pattern."
- *
- * ดังนั้น normalize โดย "แปลง space -> +" และ trim
- */
-const normalizeToken = (v?: string | null) => (v ? v.replace(/ /g, "+").trim() : "");
-
-/**
- * ✅ รองรับกรณี deploy ใต้ path เช่น /test2
- * - ถ้าโปรดักชันคุณใช้ basePath หรือ nginx serve อยู่ใต้ /test2
- * - ให้ตั้งค่า env: NEXT_PUBLIC_BASE_PATH=/test2
- * - local ไม่ต้องตั้ง (ค่าเป็น "")
- */
-const BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH || "").replace(/\/$/, "");
-
 function toErrorMessage(e: unknown): string {
   if (e instanceof Error) return e.message;
   if (typeof e === "string") return e;
@@ -79,45 +61,31 @@ function CzpAuthGate({ children }: { children: React.ReactNode }) {
     } catch {}
   };
 
-  /**
-   * Function อ่านค่า query string (รับค่าจาก URL Params)
-   * ✅ ทำ normalize mToken ที่นี่เลย กัน "+" ถูก decode เป็น space
-   */
+  // Function อ่านค่า query string (รับค่าจาก URL Params)
   const querystring = () => {
     const sp = new URLSearchParams(window.location.search);
-
-    const rawAppId = sp.get("appId");
-    const rawMToken = sp.get("mToken");
-
-    const cleanAppId = (rawAppId || "").trim() || undefined;
-    const cleanMToken = rawMToken ? normalizeToken(rawMToken) : undefined;
-
-    return { appId: cleanAppId, mToken: cleanMToken };
+    return {
+      appId: sp.get("appId") || undefined,
+      mToken: sp.get("mToken") || undefined,
+    };
   };
 
-  /**
-   * Function Login
-   * ✅ ใช้ BASE_PATH เพื่อรองรับ deploy ใต้ /test2
-   * ✅ ส่ง token ที่ normalize แล้วเท่านั้น
-   */
+  // Function Login
   const doLogin = useCallback(async (a: string, t: string) => {
-    const cleanAppId = (a || "").trim();
-    const cleanToken = normalizeToken(t);
+    if (!a || !t) throw new Error("Missing appId or mToken");
 
-    if (!cleanAppId || !cleanToken) throw new Error("Missing appId or mToken");
-
-    setAppId(cleanAppId);
-    setMToken(cleanToken);
+    setAppId(a);
+    setMToken(t);
 
     // เรียก API ใน api/auth/login เพื่อได้รับ user profile
-    // - ถ้า deploy ใต้ /test2 ให้ตั้ง NEXT_PUBLIC_BASE_PATH=/test2
-    const res = await fetch(`${BASE_PATH}/api/auth/login`, {
+    const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ appId: cleanAppId, mToken: cleanToken }),
+      body: JSON.stringify({ appId: a, mToken: t }),
       cache: "no-store",
     });
 
+    // ตรวจผลลัพธ์
     const json = (await res.json()) as LoginResponse;
 
     if (!res.ok || json.status !== "success") {
@@ -126,9 +94,8 @@ function CzpAuthGate({ children }: { children: React.ReactNode }) {
 
     // เก็บข้อมูล user profile
     setUser(json.data);
-
     // save ลง session user profile+appId (ไม่เก็บ mToken)
-    saveSession({ appId: cleanAppId, user: json.data });
+    saveSession({ appId: a, user: json.data });
   }, []);
 
   // Function relogin
@@ -148,14 +115,14 @@ function CzpAuthGate({ children }: { children: React.ReactNode }) {
       setAppId(null);
       setMToken(null);
 
-      // 1) Querystring (ถ้ามี appId/mToken จาก URL จะใช้ก่อน)
+      // 1) Querystring
       const q = querystring();
       if (q.appId && q.mToken) {
         await doLogin(q.appId, q.mToken);
         return;
       }
 
-      // 2) SDK (กรณีไม่มี querystring ให้ไปดึงจาก Citizen Portal SDK)
+      // 2) SDK
       const sdk = window.czpSdk;
       if (!sdk) throw new Error("Citizen Portal SDK not loaded");
 
@@ -168,9 +135,8 @@ function CzpAuthGate({ children }: { children: React.ReactNode }) {
       }
 
       // ดึง appId + mToken จาก SDK
-      const foundAppId = (sdk.getAppId() || "").trim();
-      const foundToken = normalizeToken(sdk.getToken());
-
+      const foundAppId = sdk.getAppId();
+      const foundToken = sdk.getToken();
       if (!foundAppId || !foundToken) {
         throw new Error("Missing appId or mToken from SDK");
       }
@@ -240,4 +206,4 @@ function CzpAuthGate({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default CzpAuthGate;
+export default CzpAuthGate

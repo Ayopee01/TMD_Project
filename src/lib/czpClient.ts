@@ -17,79 +17,65 @@ type DeprocResponse = {
 // Cache iToken ชั่วคราว
 let cachedIToken: { token: string; exp: number } | null = null;
 
-/**
- * helper ตรวจ env แบบชัดเจน (โปรดักชันพลาดง่าย)
- */
-function mustEnv(key: string): string {
-  const v = process.env[key];
-  if (!v) throw new Error(`Missing env: ${key}`);
-  return v;
-}
-
 // ดึง iToken โดยใช้ ConsumerSecret + AgentID
 async function getIToken(): Promise<string> {
   const now = Date.now();
-
   // คืนค่า token จาก cache ถ้ายังไม่หมดอายุ
   if (cachedIToken && cachedIToken.exp > now) return cachedIToken.token;
 
-  // เรียก validate API จาก .env GDX_AUTH_URL, ConsumerSecret, AgentID
-  const url = new URL(mustEnv("GDX_AUTH_URL"));
-  url.searchParams.set("ConsumerSecret", mustEnv("CONSUMER_SECRET"));
-  url.searchParams.set("AgentID", mustEnv("AGENT_ID"));
+  // เรียก validate API จาก .env GDX_AUTH_UR, ConsumerSecret, AgentID
+  const url = new URL(process.env.GDX_AUTH_URL!);
+  url.searchParams.set("ConsumerSecret", process.env.CONSUMER_SECRET!);
+  url.searchParams.set("AgentID", process.env.AGENT_ID!);
 
   // fetch validate GET GDX_AUTH_URL ส่งค่า Consumer-Key ใน header
   const res = await fetch(url.toString(), {
     method: "GET",
     headers: {
-      "Consumer-Key": mustEnv("CONSUMER_KEY"),
+      "Consumer-Key": process.env.CONSUMER_KEY!,
       "Content-Type": "application/json",
     },
     cache: "no-store",
   });
 
+  // ตรวจสอบผลลัพธ์ หากผิดพลาด throw error
   if (!res.ok) throw new Error(`validate failed: ${res.status}`);
-
+  // ดึงข้อมูล json
   const data = (await res.json()) as ValidateResponse;
+
+  // ตรวจสอบ Result token หากไม่มีให้ throw error
   if (!data?.Result) throw new Error("validate missing Result token");
 
   // cache สั้นๆ กันยิง validate ถี่เกิน (ปรับได้)
   cachedIToken = { token: data.Result, exp: now + 5 * 60 * 1000 };
-
+  // คืนค่า iToken
   return data.Result;
 }
 
-/**
- * ดึงข้อมูล profile จาก deproc โดยใช้ appId + mToken
- * ✅ sanitize อีกชั้น กัน mToken เพี้ยนจาก upstream ใดๆ
- */
+// ดึงข้อมูล profile จาก deproc โดยใช้ appId + mToken
 export async function deprocProfile(appId: string, mToken: string) {
-  const cleanAppId = (appId || "").trim();
-  const cleanMToken = (mToken || "").replace(/ /g, "+").trim();
-
-  if (!cleanAppId || !cleanMToken) {
-    throw new Error("Missing appId/mToken (after sanitize)");
-  }
-
   const iToken = await getIToken();
 
-  const res = await fetch(mustEnv("DEPROC_API_URL"), {
+  // fetch deproc
+  const res = await fetch(process.env.DEPROC_API_URL!, {
     method: "POST",
     headers: {
-      "Consumer-Key": mustEnv("CONSUMER_KEY"),
+      "Consumer-Key": process.env.CONSUMER_KEY!,
       "Content-Type": "application/json",
       Token: iToken,
     },
-    body: JSON.stringify({ AppId: cleanAppId, MToken: cleanMToken }),
+    body: JSON.stringify({ AppId: appId, MToken: mToken }),
     cache: "no-store",
   });
 
+  // ตรวจสอบผลลัพธ์
   const data = (await res.json()) as DeprocResponse;
 
-  // success เมื่อ messageCode=200 และมี userId
+  // แสดง messageCode=200 success หากไม่สำเร็จ throw error deproc failed
   if (!res.ok || data?.messageCode !== 200 || !data?.result?.userId) {
     throw new Error(data?.message || `deproc failed (${res.status})`);
   }
 
+  // คืนค่า profile(result)
   return data.result;
 }
