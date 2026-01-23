@@ -74,9 +74,6 @@ function CzpAuthGate({ children }: { children: React.ReactNode }) {
   const doLogin = useCallback(async (a: string, t: string) => {
     if (!a || !t) throw new Error("Missing appId or mToken");
 
-    console.log("[Login] appId:", a);
-    console.log("[Login] mToken:", t);
-
     setAppId(a);
     setMToken(t);
 
@@ -140,8 +137,6 @@ function CzpAuthGate({ children }: { children: React.ReactNode }) {
       // ดึง appId + mToken จาก SDK
       const foundAppId = sdk.getAppId();
       const foundToken = sdk.getToken();
-      console.log("[SDK] appId:", foundAppId);
-      console.log("[SDK] mToken:", foundToken);
       if (!foundAppId || !foundToken) {
         throw new Error("Missing appId or mToken from SDK");
       }
